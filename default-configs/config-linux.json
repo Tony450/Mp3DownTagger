@@ -1,0 +1,37 @@
+{
+    "downtag_mode": {
+        "output_music_directory": "/home/user/Music/",
+        "output_image_directory": "/tmp/",
+        "singles_name": "- Single",
+        "csv_filename": "/home/user/Music/Mp3DownTagger/DownTagInput.csv",
+        "character_repeated_titles": "()",
+        "number_of_spotify_searches_auto_mode": 5,
+        "logFile": "/var/log/Mp3DownTagger/Mp3DownTagger.log",
+        "client_id": "",
+        "client_secret": "",
+        "redirectUri": "http://localhost:8888/callback",
+        "access_token": "",
+        "delay_seconds_spotify_searches": 3,
+        "issued_token_timestamp": ""
+    },
+    "playlist_mode": {
+        "csv_playlist_filename": "/home/user/Music/Mp3DownTagger/PlaylistInput.csv",
+        "substitute_playlist_files": true,
+        "output_playlist_directory": "/home/user/Music/Playlists",
+        "folders2Scan": [
+            "/home/user/Music/"
+        ],
+        "auto_generated_playlistname": "Playlist",
+        "phone_adaptation_settings": {
+            "phone_playlist": true,
+            "output_phone_playlist_directory": "/home/user/Music/Playlists/Phone",
+            "output_phone_playlist_path": "",
+            "phone_playlists_name": " - Phone"
+        },
+        "files_2_be_inside_playlists": [
+            "mp3",
+            "m4a"
+        ]
+    },
+    "comment_character": "//"
+}

@@ -1,0 +1,76 @@
+{
+  "name": "ytdl-mp3",
+  "version": "2.1.0",
+  "description": "A NodeJS package and command-line tool for downloading music from YouTube, including automatic retrieval of ID3 tags and album art via iTunes.",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "ytdl-mp3": "./bin/ytdl-mp3"
+  },
+  "exports": {
+    ".": {
+      "require": "./dist/index.js",
+      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "rm -rf dist && tsup",
+    "cli": "ts-node ./bin/ytdl-mp3",
+    "dev": "tsup --watch",
+    "format": "prettier --write ./src/",
+    "lint": "eslint --fix --ext .ts ./src/",
+    "prepare": "husky install",
+    "preversion": "yarn lint && yarn format && npm test",
+    "postversion": "git push && git push --tags",
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/joshunrau/ytdl-mp3.git"
+  },
+  "author": "Joshua Unrau",
+  "license": "MIT",
+  "keywords": [
+    "youtube",
+    "download",
+    "mp3",
+    "music"
+  ],
+  "bugs": {
+    "url": "https://github.com/joshunrau/ytdl-mp3/issues"
+  },
+  "homepage": "https://github.com/joshunrau/ytdl-mp3#readme",
+  "dependencies": {
+    "axios": "^1.2.4",
+    "commander": "^10.0.0",
+    "ffmpeg-static": "^5.1.0",
+    "node-id3": "^0.2.5",
+    "@distube/ytdl-core": "^4.14.4"
+  },
+  "devDependencies": {
+    "@types/ffmpeg-static": "^3.0.1",
+    "@types/jest": "^29.2.6",
+    "@types/node": "^18.11.18",
+    "@typescript-eslint/eslint-plugin": "^5.49.0",
+    "@typescript-eslint/parser": "^5.49.0",
+    "eslint": "^8.32.0",
+    "eslint-config-prettier": "^8.6.0",
+    "eslint-plugin-import": "^2.27.5",
+    "husky": "^8.0.3",
+    "jest": "^29.4.0",
+    "prettier": "2.8.4",
+    "ts-jest": "^29.0.5",
+    "ts-node": "^10.9.1",
+    "tsup": "^6.6.2",
+    "typescript": "^4.9.4"
+  },
+  "files": [
+    "bin",
+    "dist",
+    "LICENSE",
+    "README.md",
+    "package.json"
+  ]
+}

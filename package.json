@@ -1,0 +1,29 @@
+{
+  "name": "Mp3DownTagger",
+  "version": "1.0.0",
+  "description": "",
+  "main": "Mp3DownTagger.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@distube/ytdl-core": "^4.14.4",
+    "axios": "^1.6.0",
+    "csv-parser": "^3.0.0",
+    "get-mp3-duration": "^1.0.0",
+    "image-downloader": "^4.3.0",
+    "internet-available": "^1.0.0",
+    "isomorphic-unfetch": "^3.1.0",
+    "m3u-parser-generator": "^1.0.4",
+    "node-fetch": "^3.3.0",
+    "node-id3": "^0.2.3",
+    "spotify-url-info": "^3.2.16",
+    "spotify-web-api-node": "^5.0.2",
+    "synchronized-promise": "^0.3.1",
+    "ytdl-mp3": "^2.1.0"
+  },
+  "type": "module"
+}
