@@ -1,17 +1,56 @@
+"use strict";
+var __create = Object.create;
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getProtoOf = Object.getPrototypeOf;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
+var __copyProps = (to, from, except, desc) => {
+  if (from && typeof from === "object" || typeof from === "function") {
+    for (let key of __getOwnPropNames(from))
+      if (!__hasOwnProp.call(to, key) && key !== except)
+        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+  }
+  return to;
+};
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
+  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+  mod
+));
+var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+
+// src/index.ts
+var index_exports = {};
+__export(index_exports, {
+  Downloader: () => Downloader,
+  FormatConverter: () => FormatConverter,
+  SongTagsSearch: () => SongTagsSearch,
+  YtdlMp3Error: () => YtdlMp3Error
+});
+module.exports = __toCommonJS(index_exports);
+
 // src/Downloader.ts
-import os from "os";
-import path from "path";
-import ytdl from "@distube/ytdl-core";
-import NodeID3 from "node-id3";
+var import_os = __toESM(require("os"), 1);
+var import_path = __toESM(require("path"), 1);
+var import_ytdl_core = __toESM(require("@distube/ytdl-core"), 1);
+var import_node_id3 = __toESM(require("node-id3"), 1);
 
 // src/FormatConverter.ts
-import cp from "child_process";
-import fs2 from "fs";
-import ffmpeg from "ffmpeg-static";
+var import_child_process = __toESM(require("child_process"), 1);
+var import_fs2 = __toESM(require("fs"), 1);
+var import_ffmpeg_static = __toESM(require("ffmpeg-static"), 1);
 
 // src/utils.ts
-import fs from "fs";
-import readline from "readline";
+var import_fs = __toESM(require("fs"), 1);
+var import_readline = __toESM(require("readline"), 1);
 function removeParenthesizedText(s) {
   const regex = /\s*([[(][^[\]()]*[\])])\s*/g;
   while (regex.test(s)) {
@@ -20,10 +59,10 @@ function removeParenthesizedText(s) {
   return s;
 }
 function isDirectory(path2) {
-  return fs.existsSync(path2) && fs.lstatSync(path2).isDirectory();
+  return import_fs.default.existsSync(path2) && import_fs.default.lstatSync(path2).isDirectory();
 }
 async function userInput(prompt, defaultInput) {
-  const rl = readline.createInterface({
+  const rl = import_readline.default.createInterface({
     input: process.stdin,
     output: process.stdout
   });
@@ -50,23 +89,23 @@ var YtdlMp3Error = class extends Error {
 var FormatConverter = class {
   ffmpegBinary;
   constructor() {
-    if (!ffmpeg) {
+    if (!import_ffmpeg_static.default) {
       throw new YtdlMp3Error("Failed to resolve ffmpeg binary");
     }
-    this.ffmpegBinary = ffmpeg;
+    this.ffmpegBinary = import_ffmpeg_static.default;
   }
   videoToAudio(videoData, outputFile) {
-    if (fs2.existsSync(outputFile)) {
+    if (import_fs2.default.existsSync(outputFile)) {
       throw new YtdlMp3Error(`Output file already exists: ${outputFile}`);
     }
-    cp.execSync(`${this.ffmpegBinary} -loglevel 24 -i pipe:0 -vn -sn -c:a mp3 -ab 192k ${outputFile}`, {
+    import_child_process.default.execSync(`${this.ffmpegBinary} -loglevel 24 -i pipe:0 -vn -sn -c:a mp3 -ab 192k ${outputFile}`, {
       input: videoData
     });
   }
 };
 
 // src/SongTagsSearch.ts
-import axios from "axios";
+var import_axios = __toESM(require("axios"), 1);
 var SongTagsSearch = class {
   searchTerm;
   url;
@@ -98,12 +137,12 @@ var SongTagsSearch = class {
     };
   }
   async fetchAlbumArt(url) {
-    return axios.get(url, { responseType: "arraybuffer" }).then((response) => Buffer.from(response.data, "binary")).catch(() => {
+    return import_axios.default.get(url, { responseType: "arraybuffer" }).then((response) => Buffer.from(response.data, "binary")).catch(() => {
       throw new YtdlMp3Error("Failed to fetch album art from endpoint: " + url);
     });
   }
   async fetchResults() {
-    const response = await axios.get(this.url.href).catch((error) => {
+    const response = await import_axios.default.get(this.url.href).catch((error) => {
       if (error.response?.status) {
         throw new YtdlMp3Error(`Call to iTunes API returned status code ${error.response.status}`);
       }
@@ -137,7 +176,7 @@ var SongTagsSearch = class {
 
 // src/Downloader.ts
 var Downloader = class _Downloader {
-  static defaultDownloadsDir = path.join(os.homedir(), "Downloads");
+  static defaultDownloadsDir = import_path.default.join(import_os.default.homedir(), "Downloads");
   customSearchTerm;
   getTags;
   outputDir;
@@ -156,7 +195,7 @@ var Downloader = class _Downloader {
     if (!isDirectory(this.outputDir)) {
       throw new YtdlMp3Error(`Not a directory: ${this.outputDir}`);
     }
-    const videoInfo = await ytdl.getInfo(url).catch((error) => {
+    const videoInfo = await import_ytdl_core.default.getInfo(url).catch((error) => {
       throw new YtdlMp3Error(`Failed to fetch info for video with URL: ${url}`, {
         cause: error
       });
@@ -175,7 +214,7 @@ var Downloader = class _Downloader {
     let songTags = null;
     if (this.getTags) {
       songTags = await songTagsSearch.search(this.verifyTags);
-      NodeID3.write(songTags, outputFile);
+      import_node_id3.default.write(songTags, outputFile);
     }
     if (!this.silentMode) {
       //console.log(`Done! Output file: ${outputFile}`);
@@ -192,7 +231,7 @@ var Downloader = class _Downloader {
   /** Returns the content from the video as a buffer */
   async downloadVideo(videoInfo) {
     const buffers = [];
-    const stream = ytdl.downloadFromInfo(videoInfo, { quality: "highestaudio" });
+    const stream = import_ytdl_core.default.downloadFromInfo(videoInfo, { quality: "highestaudio" });
     return new Promise((resolve, reject) => {
       stream.on("data", (chunk) => {
         buffers.push(chunk);
@@ -208,13 +247,14 @@ var Downloader = class _Downloader {
   /** Returns the absolute path to the audio file to be downloaded */
   getOutputFile(videoTitle) {
     const baseFileName = removeParenthesizedText(videoTitle).replace(/[^a-z0-9]/gi, "_").split("_").filter((element) => element).join("_").toLowerCase();
-    return path.join(this.outputDir, "/\"" + this.audioFile + "\"" + ".mp3");
+    return import_path.default.join(this.outputDir, "/\"" + this.audioFile + "\"" + ".mp3");
   }
 };
-export {
+// Annotate the CommonJS export names for ESM import in node:
+0 && (module.exports = {
   Downloader,
   FormatConverter,
   SongTagsSearch,
   YtdlMp3Error
-};
-//# sourceMappingURL=index.js.map
+});
+//# sourceMappingURL=index.cjs.map

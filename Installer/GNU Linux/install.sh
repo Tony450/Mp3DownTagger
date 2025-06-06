@@ -166,6 +166,5 @@ sudo npm install
 #Substitute ytdl library
 cd /opt/Mp3DownTagger/
 cd ytdl-mp3-fix
-sudo cp -f index.js index.mjs ../node_modules/ytdl-mp3/dist/
-sudo cp -f package.json ../node_modules/ytdl-mp3/
+sudo cp -f index.js index.cjs ../node_modules/ytdl-mp3/dist/
 

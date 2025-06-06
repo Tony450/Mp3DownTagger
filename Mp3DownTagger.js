@@ -1,4 +1,4 @@
-import {downloadSong} from "ytdl-mp3";
+import {Downloader} from "ytdl-mp3";
 import csv from "csv-parser";
 import fs from "fs";
 import internetAvailable from "internet-available";
@@ -17,6 +17,9 @@ const config = JSON.parse(fs.readFileSync(__dirname + "/config.json"));				     
 let songs2Download = [];
 let downloadProgressVar = new Array(50);
 let currentSong2Download = null;
+const youtubeDownloader = new Downloader({
+    getTags: false
+});
 
 init();
 
@@ -98,11 +101,13 @@ async function downTagMode() {
 
                             console.log("Downloading " + songs2Download[i].song + ".mp3...");
 
-                            const filename = await downloadSong(songs2Download[i].youtube_url, {
+                            const youtubeDownloader = new Downloader({
                                 getTags: false,
                                 outputDir: config.downtag_mode.output_music_directory,
                                 audioFile: songs2Download[i].song
                             });
+
+                            await youtubeDownloader.downloadSong(songs2Download[i].youtube_url);
 
 
                             console.log("- " + songs2Download[i].song + ".mp3 downloaded");
@@ -185,11 +190,13 @@ async function downTagMode() {
 
                             console.log("Downloading " + currentSong2Download + ".mp3...");
 
-                            const filename = await downloadSong(songs2Download[i].youtube_url, {
+                            const youtubeDownloader = new Downloader({
                                 getTags: false,
                                 outputDir: config.downtag_mode.output_music_directory,
                                 audioFile: mp3Name
                             });
+
+                            await youtubeDownloader.downloadSong(songs2Download[i].youtube_url);
 
                             console.log("- " + mp3Name + ".mp3 downloaded\n");
 
@@ -395,7 +402,7 @@ async function main() {
 
         else if (process.argv.length === 3 && process.argv[2].localeCompare("-help") == 0) {
 
-            console.log("Mp3DownTagger 1.0.0. A music downloader and tagger program that is also capable of creating playlists with powerful filters.\n");
+            console.log("Mp3DownTagger 1.0.1. A music downloader and tagger program that is also capable of creating playlists with powerful filters.\n");
             console.log("Usage: Mp3DownTagger [OPTION]\n");
             console.log("-downtag\tDownload and tag new songs, simply download, or simply tag an existing song.");
             console.log("-playlist\tCreate a playlist applying powerful filters.");
