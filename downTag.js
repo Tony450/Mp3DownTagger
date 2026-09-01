@@ -7,7 +7,7 @@ import spotify from "spotify-url-info";
 import SpotifyWebApi from "spotify-web-api-node";
 import path from "path";
 import {fileURLToPath} from "url";
-import {prepareString4Comparison, delay, formatTitleTag, titleIsPresent, formatTitleSpotify, isEmptyObject} from "./utils.js"
+import {prepareString4Comparison, delay, formatTitleTag, titleIsPresent, formatTitleSpotify, decodeString} from "./utils.js"
 
 
 
@@ -100,141 +100,74 @@ async function getSpotifySearchLinks(song, extraInformation) {
 }
 
 
-
 async function getSpotifyHTMLInfo(spotifyURL) {
-
-	let spotifyMetadata = {};
-
-    let response = await websiteFetchHandler(spotifyURL);
-
-	const data = await response.text();
-
-	let startIndex = data.indexOf("<title>");
-	let endIndex = data.indexOf("</title>");
-
-	let album_typeText = data.substring(startIndex, endIndex);
-
-	if (album_typeText.includes("- Single ")) {
-		spotifyMetadata.album_type = "single";
-	}
-
-	else if (album_typeText.includes("- Album ") || album_typeText.includes("- EP ")) {
-		spotifyMetadata.album_type = "album";
-	}
-
-    else {
-        spotifyMetadata.album_type = "undefined";
-    }
-
-	startIndex = data.indexOf("release_date");
-	endIndex = startIndex + 34;			                                                                                     //Offset
-
-	let date_text = data.substring(startIndex, endIndex);
-	date_text = date_text.replaceAll("\"","")
-
-	spotifyMetadata.release_date = date_text.split("content=")[1];
+    let spotifyMetadata = {
+        album_type: "undefined",
+        album: "",
+        album_artist: "",
+        release_date: "",
+        imageURL: "",
+        tracks: []
+    };
 
 
-    startIndex = data.indexOf("- Album by");
+    const response = await websiteFetchHandler(spotifyURL);
+    const data = await response.text();
 
-    if (startIndex === -1) {
 
-        startIndex = data.indexOf("- Single by");
+    const jsonLdMatch = data.match(/<script type="application\/ld\+json">(.*?)<\/script>/s);
+    if (jsonLdMatch && jsonLdMatch[1]) {
+        try {
+            const jsonLd = JSON.parse(jsonLdMatch[1]);
+            spotifyMetadata.album = decodeString(jsonLd.name || "");
+            spotifyMetadata.release_date = (jsonLd.datePublished || "").replaceAll('"', '');
 
-        if (startIndex === -1) {
+            if (jsonLd.description) {
+                const descParts = jsonLd.description.split("·").map(s => s.trim());
+                if (descParts.length >= 3) {
+                    const releaseCategory = descParts[1].toLowerCase();
+                    if (releaseCategory.includes("single")) {
+                        spotifyMetadata.album_type = "single";
+                    }
+                    else if (releaseCategory.includes("album") || releaseCategory.includes("ep")) {
+                        spotifyMetadata.album_type = "ep";
+                    }
 
-            startIndex = data.indexOf("- EP by");
+                    spotifyMetadata.album_artist = decodeString(descParts[2]);
+                }
+            }
 
+        } catch (e) {
+            console.error("Failed to parse JSON-LD metadata", e);
         }
     }
 
-    let albumartistIndex = startIndex;
+    if (spotifyMetadata.tracks.length === 0) {
 
-    endIndex = startIndex;
-    startIndex = startIndex - 70;
-
-    let aux_album = data.substring(startIndex, endIndex);
-
-    spotifyMetadata.album = aux_album.substring(aux_album.indexOf("<title>")).trim().replace("<title>", "").toLowerCase().replace(/(^\w{1})|(\s+\w{1})/g, letter => letter.toUpperCase()).replaceAll("&#x27;", "'").replaceAll("&amp;", "&").replaceAll(/\u2019/g, "'");
-
-    spotifyMetadata.album_artist = data.substring(albumartistIndex, data.indexOf("|")).replaceAll("&amp;", "&").replace("- Album by ", "").replace("- EP by ", "").trim();
-
-    startIndex = data.indexOf("https://i.scdn.co/image/");
-    endIndex = startIndex + 80;
-
-    let aux_url_image = data.substring(startIndex, endIndex);
-
-    let auxIndex = aux_url_image.indexOf("/>") - 1;
-
-
-    spotifyMetadata.imageURL = aux_url_image.substring(0, auxIndex);
-
-
-    let numberSongs = data.match(/aria-label=/g).length;
-
-    let data2 = data;
-
-    let tracks = []
-
-
-
-    for (let i = 0; i < numberSongs; i++) {                                                                                  //Songs
-
-        let auxIndex = data2.indexOf("aria-label=");
-
-        if (i < 4) {
-            data2 = data2.substring(auxIndex + 20);
-
+        const htmlTitleRegex = /data-encore-id="listRowTitle"[^>]*>(?:<span[^>]*>)*(.*?)(?:<\/span>)*<\/p>/gi;
+        const htmlNames = [];
+        let htmlMatch;
+        while ((htmlMatch = htmlTitleRegex.exec(data)) !== null) {
+            if (htmlMatch[1] && htmlMatch[1].trim()) {
+                htmlNames.push(decodeString(htmlMatch[1].trim()));
+            }
         }
 
-        if (i >= 4) {
+        spotifyMetadata.tracks = htmlNames.map((name, index) => ({
+            trackNumber: index + 1,
+            songName: name
+        }));
+    }
 
-            let startIndex = data2.indexOf("aria-label=");
-            let endIndex = data2.indexOf("data-testid=\"track-row");
-
-
-            let songName = data2.substring(startIndex, endIndex - 2).replace("aria-label=\"", "").replaceAll("&#x27;", "'").replaceAll(/\u2019/g, "'");
-
-            let endIndexArtist = data2.indexOf("</p></div>");
-            let auxTextArtists = data2.substring(endIndexArtist - 150, endIndexArtist);
-
-            let text2Log = "------------------------" + songName + "------------------------\n" + auxTextArtists + "\n\n";
-
-            fs.appendFileSync(config.downtag_mode.logFile, text2Log, "utf8");
-
-            let artists = "";
-
-            if (!auxTextArtists.includes("<span><a")) {
-
-                let startIndexArtirts = auxTextArtists.indexOf(">") + 1;
-                artists = auxTextArtists.substring(startIndexArtirts, endIndexArtist);
-
-            }
-
-            else {
-
-                auxTextArtists = auxTextArtists.substring(auxTextArtists.indexOf("<span><a") + 8, auxTextArtists.indexOf("</a></span>"));
-
-                let startIndexArtirts = auxTextArtists.indexOf(">") + 1;
-                artists = auxTextArtists.substring(startIndexArtirts);
-
-            }
-
-            artists = artists.replaceAll("&#x27;", "`");
-            tracks.push({songName, artists});
-            data2 = data2.substring(endIndexArtist + 10);
-
-        }
-
-
-        spotifyMetadata.tracks = tracks;
-
+    const imageMatch = data.match(/<meta property="og:image" content="([^"]+)"\/>/);
+    if (imageMatch && imageMatch[1]) {
+        spotifyMetadata.imageURL = imageMatch[1];
     }
 
     await delay(config.downtag_mode.delay_seconds_spotify_searches + "000");
     spotifyMetadata = await addSpotifyArtists(spotifyURL, spotifyMetadata);
 
-	return spotifyMetadata;
+    return spotifyMetadata;
 
 }
 
@@ -433,7 +366,7 @@ async function tagFile(spotifyMetadata, songTitle) {
 
         let outputArtists = null;                                                                                            //String
 
-		let inputArtistsAux = inputArtists.split(", ");
+		let inputArtistsAux = inputArtists.split(/,\s+/);
 
 
         for (let i = 0; i < inputArtistsAux.length; i++) {                                                                   //Album artist(s)

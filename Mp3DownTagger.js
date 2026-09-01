@@ -1,4 +1,4 @@
-import {Downloader} from "ytdl-mp3";
+import {spawn} from 'node:child_process';
 import csv from "csv-parser";
 import fs from "fs";
 import internetAvailable from "internet-available";
@@ -17,9 +17,6 @@ const config = JSON.parse(fs.readFileSync(__dirname + "/config.json"));				     
 let songs2Download = [];
 let downloadProgressVar = new Array(50);
 let currentSong2Download = null;
-const youtubeDownloader = new Downloader({
-    getTags: false
-});
 
 init();
 
@@ -65,6 +62,56 @@ function checkMusicDirectory() {
     }
 
 }
+function downloadFromYoutube(songName, url) {
+    return new Promise((resolve, reject) => {
+        const outputDir = config.downtag_mode.output_music_directory;
+        const ytDlpPath = config.downtag_mode.ytdlp_path;
+
+        const args = [
+            '--no-update',
+            '--remote-components', 'ejs:github',
+            '--js-runtimes', 'node',                                                                    // Forces yt-dlp to use Node instead of Deno
+            '--impersonate', 'chrome',
+            '--sleep-requests', '2',
+            '--sleep-interval', '5',
+            '--cookies-from-browser', 'chrome',
+            '-x',
+            '--audio-format', 'mp3',
+            '--audio-quality', '0',
+            '-o', `${songName}.%(ext)s`,
+            url
+        ];
+
+        const child = spawn(ytDlpPath, args, {
+            cwd: outputDir,
+            env: process.env
+        });
+
+        let stderrData = "";
+        let stdoutData = "";
+
+        child.stdout.on('data', (data) => {
+            process.stdout.write(data);
+            stdoutData = stdoutData + data.toString();
+        });
+
+        child.stderr.on('data', (data) => {
+            process.stderr.write(data);
+            stderrData = stderrData + data.toString();
+        });
+
+        child.on('close', (code) => {
+            if (code === 0) {
+                resolve();
+            }
+            else {
+                reject(new Error(`yt-dlp failed (code ${code}):\n${stderrData || stdoutData}`));
+            }
+        });
+
+        child.on('error', (error) => reject(error));
+    });
+}
 
 async function downTagMode() {
 
@@ -101,14 +148,7 @@ async function downTagMode() {
 
                             console.log("Downloading " + songs2Download[i].song + ".mp3...");
 
-                            const youtubeDownloader = new Downloader({
-                                getTags: false,
-                                outputDir: config.downtag_mode.output_music_directory,
-                                audioFile: songs2Download[i].song
-                            });
-
-                            await youtubeDownloader.downloadSong(songs2Download[i].youtube_url);
-
+                            await downloadFromYoutube(songs2Download[i].song, songs2Download[i].youtube_url);
 
                             console.log("- " + songs2Download[i].song + ".mp3 downloaded");
 
@@ -190,13 +230,7 @@ async function downTagMode() {
 
                             console.log("Downloading " + currentSong2Download + ".mp3...");
 
-                            const youtubeDownloader = new Downloader({
-                                getTags: false,
-                                outputDir: config.downtag_mode.output_music_directory,
-                                audioFile: mp3Name
-                            });
-
-                            await youtubeDownloader.downloadSong(songs2Download[i].youtube_url);
+                            await downloadFromYoutube(mp3Name, songs2Download[i].youtube_url);
 
                             console.log("- " + mp3Name + ".mp3 downloaded\n");
 
@@ -402,7 +436,7 @@ async function main() {
 
         else if (process.argv.length === 3 && process.argv[2].localeCompare("-help") == 0) {
 
-            console.log("Mp3DownTagger 1.0.1. A music downloader and tagger program that is also capable of creating playlists with powerful filters.\n");
+            console.log("Mp3DownTagger 1.1.0. A music downloader and tagger program that is also capable of creating playlists with powerful filters.\n");
             console.log("Usage: Mp3DownTagger [OPTION]\n");
             console.log("-downtag\tDownload and tag new songs, simply download, or simply tag an existing song.");
             console.log("-playlist\tCreate a playlist applying powerful filters.");

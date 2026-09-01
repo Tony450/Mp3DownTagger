@@ -2,6 +2,7 @@
     "downtag_mode": {
         "output_music_directory": "/home/user/Music/",
         "output_image_directory": "/tmp/",
+        "ytdlp_path": "/home/user/.local/bin/yt-dlp",
         "singles_name": "- Single",
         "csv_filename": "/home/user/Music/Mp3DownTagger/DownTagInput.csv",
         "character_repeated_titles": "()",

@@ -108,6 +108,24 @@ function occurrences(string, subString, allowOverlapping) {
     return counter;
 }
 
+function decodeString(string) {
+
+    if (!string) {
+        return "";
+    }
+
+    return string
+        .replace(/\\u([\dA-Fa-f]{4})/g, (_, grp) => String.fromCharCode(parseInt(grp, 16)))
+        .replaceAll("&#x27;", "'")
+        .replaceAll(/\u2019/g, "'")
+        .replaceAll("&amp;", "&")
+        .replace(/&lt;/g, "<")
+        .replace(/&gt;/g, ">")
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'");
+
+}
+
 export {
     prepareString4Comparison,
     delay,
@@ -116,5 +134,6 @@ export {
     titleIsPresent,
     checkAutoTagModePresence,
     isEmptyObject,
-    occurrences
+    occurrences,
+    decodeString
 };

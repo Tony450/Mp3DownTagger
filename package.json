@@ -21,8 +21,7 @@
     "node-id3": "^0.2.3",
     "spotify-url-info": "^3.2.16",
     "spotify-web-api-node": "^5.0.2",
-    "synchronized-promise": "^0.3.1",
-    "ytdl-mp3": "^5.2.2"
+    "synchronized-promise": "^0.3.1"
   },
   "type": "module"
 }
